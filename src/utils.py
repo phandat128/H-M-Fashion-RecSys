@@ -82,23 +82,23 @@ def reduce_mem_usage(df: pd.DataFrame, verbose: bool = False) -> pd.DataFrame:
 
             # Make Integer/unsigned Integer datatypes
             if IsInt:
-                if mn >= 0:
-                    if mx < 255:
+                if mn > 0:
+                    if mx <= 255:
                         df[col] = df[col].astype(np.uint8)
-                    elif mx < 65535:
+                    elif mx <= 65535:
                         df[col] = df[col].astype(np.uint16)
-                    elif mx < 4294967295:
+                    elif mx <= 4294967295:
                         df[col] = df[col].astype(np.uint32)
                     else:
                         df[col] = df[col].astype(np.uint64)
                 else:
-                    if mn > np.iinfo(np.int8).min and mx < np.iinfo(np.int8).max:
+                    if mn >= np.iinfo(np.int8).min and mx <= np.iinfo(np.int8).max:
                         df[col] = df[col].astype(np.int8)
-                    elif mn > np.iinfo(np.int16).min and mx < np.iinfo(np.int16).max:
+                    elif mn >= np.iinfo(np.int16).min and mx <= np.iinfo(np.int16).max:
                         df[col] = df[col].astype(np.int16)
-                    elif mn > np.iinfo(np.int32).min and mx < np.iinfo(np.int32).max:
+                    elif mn >= np.iinfo(np.int32).min and mx <= np.iinfo(np.int32).max:
                         df[col] = df[col].astype(np.int32)
-                    elif mn > np.iinfo(np.int64).min and mx < np.iinfo(np.int64).max:
+                    elif mn >= np.iinfo(np.int64).min and mx <= np.iinfo(np.int64).max:
                         df[col] = df[col].astype(np.int64)
 
             # Make float datatypes 32 bit

@@ -42,7 +42,7 @@ def full_sale(
     inter = trans[["customer_id", "week", *groupby_cols]].merge(
         df, on=["week", *groupby_cols], how="left"
     )
-    inter["_SALE"] = inter["_SALE"].fillna(0).astype("int")
+    inter["_SALE"] = inter["_SALE"].fillna(0).astype("int32")
 
     return inter["_SALE"].values
 
@@ -88,10 +88,9 @@ def week_sale(
     tmp_inter = trans[["week", "customer_id", *groupby_cols]].merge(
         df, on=["week", *groupby_cols], how="left"
     )
-    tmp_inter["_SALE"] = tmp_inter["_SALE"].fillna(0).astype("int")
+    tmp_inter["_SALE"] = tmp_inter["_SALE"].fillna(0).astype('int32')
 
-    return tmp_inter["_SALE"].values.astype(int)
-
+    return tmp_inter["_SALE"].values
 
 def period_sale(
     trans: pd.DataFrame,
@@ -153,16 +152,16 @@ def period_sale(
     df = df.merge(sale_df, on=[*groupby_cols, "week"], how="left")
 
     if not rank and not norm:
-        return df[name].values.astype(int)
+        return df[name].values.astype('int32')
     elif rank and not norm:
-        return df[name].values.astype(int), df[name + "_rank"].values.astype(int)
+        return df[name].values.astype('int32'), df[name + "_rank"].values.astype('int32')
     elif not rank and norm:
-        return df[name].values.astype(int), df[name + "_norm"].values
+        return df[name].values.astype('int32'), df[name + "_norm"].values.astype('float32')
     else:
         return (
-            df[name].values.astype(int),
-            df[name + "_rank"].values.astype(int),
-            df[name + "_norm"].values,
+            df[name].values.astype('int32'),
+            df[name + "_rank"].values.astype('int32'),
+            df[name + "_norm"].values.astype('float32'),
         )
 
 
@@ -184,8 +183,9 @@ def repurchase_ratio(
         Array of repurchase ratios.
     """
     tmp_l = []
+    df = trans[[*groupby_cols, "customer_id", "t_dat", "week", "valid"]]
     for week in tqdm(range(1, week_num + 1)):
-        tmp_df = trans[trans["week"] >= week]
+        tmp_df = df[df["week"] >= week]
         # * Article re-purchase ratio
         item_user_sale = (
             tmp_df[tmp_df["valid"] == 1]
@@ -208,10 +208,10 @@ def repurchase_ratio(
         item_sale["week"] = week
         tmp_l.append(item_sale)
 
-    df = trans[["week", *groupby_cols]]
+    df = df[["week", *groupby_cols]]
     item_sale = pd.concat(tmp_l, ignore_index=True)
     df = df.merge(item_sale, on=["week", *groupby_cols], how="left")
-    df["_RATIO"] = df["_RATIO"].fillna(0)
+    df["_RATIO"] = df["_RATIO"].fillna(0).astype("float32")
     return df["_RATIO"].values
 
 
@@ -249,5 +249,5 @@ def popularity(
 
     info = pd.concat(tmp_l)[[item_id, name, "week"]]
     df = df.merge(info, on=[item_id, "week"], how="left")
-    df[name] = df[name].fillna(0)
+    df[name] = df[name].fillna(0).astype("float32")
     return df[name].values
